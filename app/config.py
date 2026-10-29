@@ -5,18 +5,28 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
+def normalize_database_url(raw_url):
+    """Normalizes database URLs for PostgreSQL (Render/Heroku) and MySQL compatibility."""
+    if not raw_url:
+        return f"sqlite:///{BASE_DIR / 'fitstart.db'}"
+    
+    url = raw_url.strip()
+    # Normalize Render / Heroku postgresql url
+    if url.startswith('postgres://'):
+        url = url.replace('postgres://', 'postgresql+psycopg://', 1)
+    elif url.startswith('postgresql://') and not url.startswith('postgresql+'):
+        url = url.replace('postgresql://', 'postgresql+psycopg://', 1)
+    elif url.startswith('mysql://'):
+        url = url.replace('mysql://', 'mysql+pymysql://', 1)
+    
+    return url
+
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY', 'fitstart-dev-secret-key-fallback')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_DATABASE_URI = normalize_database_url(os.environ.get('DATABASE_URL'))
     
-    # Preferred database is MySQL, falling back to SQLite if MySQL is not running or not configured
-    database_url = os.environ.get('DATABASE_URL')
-    if not database_url:
-        database_url = f"sqlite:///{BASE_DIR / 'fitstart.db'}"
-    elif database_url.startswith('postgres://'):
-        database_url = database_url.replace('postgres://', 'postgresql://', 1)
-        
-    SQLALCHEMY_DATABASE_URI = database_url
+    # CSRF Protection
     WTF_CSRF_ENABLED = True
     WTF_CSRF_TIME_LIMIT = None
     
@@ -40,6 +50,8 @@ class ProductionConfig(Config):
     DEBUG = False
     TESTING = False
     SESSION_COOKIE_SECURE = True
+    REMEMBER_COOKIE_SECURE = True
+    PREFERRED_URL_SCHEME = 'https'
 
 config_by_name = {
     'development': DevelopmentConfig,

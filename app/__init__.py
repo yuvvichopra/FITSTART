@@ -19,6 +19,11 @@ def create_app(config_name=None):
     config_class = config_by_name.get(config_name, config_by_name['default'])
     app.config.from_object(config_class)
 
+    # Reverse proxy middleware for production (Render / HTTPS)
+    if config_name == 'production' or not app.config.get('DEBUG'):
+        from werkzeug.middleware.proxy_fix import ProxyFix
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
     # Initialize extensions
     db.init_app(app)
     login_manager.init_app(app)

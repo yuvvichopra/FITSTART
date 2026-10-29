@@ -1,6 +1,24 @@
 # 🌿 FitStart: Evidence-Based Personal Fitness & Nutrition Engine
 
-> **A soundly engineered, scientific training and nutrition platform built with Flask, SQLAlchemy, MySQL/SQLite, and Chart.js for real-world student, collegiate, and athlete constraints.**
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/yuvvichopra/FITSTART)
+
+> **A soundly engineered, scientific training and nutrition platform built with Flask, SQLAlchemy, MySQL/PostgreSQL/SQLite, and Chart.js for real-world student, collegiate, and athlete constraints.**
+
+---
+
+## 🚀 One-Click Public Deployment (Render Free Tier)
+
+Deploying FitStart publicly takes 2 minutes using Render:
+
+1. Click the **[Deploy to Render](https://render.com/deploy?repo=https://github.com/yuvvichopra/FITSTART)** button above.
+2. Sign in or create a free account at [render.com](https://render.com).
+3. Render will read [`render.yaml`](file:///C:/Users/Yuvraj%20Chopra/Desktop/FITSTART/render.yaml) automatically:
+   - It provisions a **Free Managed PostgreSQL Database** (`fitstart-db`).
+   - It provisions a **Free Web Service** running Gunicorn WSGI (`fitstart-app`).
+   - It automatically generates a secure `SECRET_KEY` and connects `DATABASE_URL`.
+4. Click **Apply**.
+5. Your public HTTPS URL will be available immediately at:
+   `https://fitstart-app.onrender.com` (or your chosen instance name).
 
 ---
 

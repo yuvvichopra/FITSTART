@@ -1,0 +1,443 @@
+{% extends "base.html" %}
+
+{% block title %}Personalized Onboarding Questionnaire | FitStart{% endblock %}
+
+{% block content %}
+<div style="max-width: 820px; margin: 0 auto;">
+    <div class="page-header" style="text-align: center; margin-bottom: 1.5rem;">
+        <h1 class="page-title">Personalized Onboarding Questionnaire</h1>
+        <p class="page-subtitle">Answer these 8 science-backed questions to calibrate your customized training and nutrition engines</p>
+    </div>
+
+    <!-- Progress Indicator -->
+    <div class="progress-bar-container" style="height: 10px; margin-bottom: 1.5rem;">
+        <div id="wizard-progress-bar" class="progress-bar-fill" style="width: 12.5%;"></div>
+    </div>
+
+    <div class="wizard-steps">
+        <div class="step-indicator active" data-step="1">1. Personal</div>
+        <div class="step-indicator" data-step="2">2. Experience</div>
+        <div class="step-indicator" data-step="3">3. Goals</div>
+        <div class="step-indicator" data-step="4">4. Equipment</div>
+        <div class="step-indicator" data-step="5">5. Schedule</div>
+        <div class="step-indicator" data-step="6">6. Diet</div>
+        <div class="step-indicator" data-step="7">7. Safety</div>
+        <div class="step-indicator" data-step="8">8. Preferences</div>
+    </div>
+
+    <form id="onboarding-wizard" method="POST" action="{{ url_for('onboarding.questionnaire') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <!-- STEP 1: PERSONAL INFORMATION -->
+        <div class="card wizard-step-panel" data-step="1">
+            <h2 class="card-title" style="margin-bottom: 1rem;">Step 1: Personal & Physical Metrics</h2>
+            
+            <div class="grid grid-2">
+                <div class="form-group">
+                    <label for="age" class="form-label">Age (years) *</label>
+                    <input type="number" id="age" name="age" min="13" max="100" class="form-control" value="{{ profile.age or 21 }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="gender" class="form-label">Gender (optional)</label>
+                    <select id="gender" name="gender" class="form-select">
+                        <option value="Male" {% if profile.gender == 'Male' %}selected{% endif %}>Male</option>
+                        <option value="Female" {% if profile.gender == 'Female' %}selected{% endif %}>Female</option>
+                        <option value="Non-binary" {% if profile.gender == 'Non-binary' %}selected{% endif %}>Non-binary</option>
+                        <option value="Prefer not to say" {% if profile.gender == 'Prefer not to say' %}selected{% endif %}>Prefer not to say</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="unit_system" class="form-label">Measurement Units</label>
+                    <select id="unit_system" name="unit_system" class="form-select">
+                        <option value="metric" {% if profile.unit_system == 'metric' %}selected{% endif %}>Metric (cm, kg)</option>
+                        <option value="imperial" {% if profile.unit_system == 'imperial' %}selected{% endif %}>Imperial (inches, lbs)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="region" class="form-label">Geographic Region (for food recommendations)</label>
+                    <select id="region" name="region" class="form-select">
+                        <option value="North Indian" {% if profile.region == 'North Indian' %}selected{% endif %}>North Indian (Roti, Dal, Paneer, Rajma)</option>
+                        <option value="South Indian" {% if profile.region == 'South Indian' %}selected{% endif %}>South Indian (Rice, Sambar, Idli, Dosa)</option>
+                        <option value="East Indian" {% if profile.region == 'East Indian' %}selected{% endif %}>East Indian (Rice, Dal, Fish, Sattu)</option>
+                        <option value="West Indian" {% if profile.region == 'West Indian' %}selected{% endif %}>West Indian (Poha, Roti, Dal, Thepla)</option>
+                        <option value="Global" {% if profile.region == 'Global' %}selected{% endif %}>Global / Continental</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="height" class="form-label">Height <span id="height_unit_label">(in cm)</span> *</label>
+                    <input type="number" step="0.1" id="height" name="height" class="form-control" value="{{ profile.height_cm or 172 }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="weight" class="form-label">Body Weight <span id="weight_unit_label">(in kg)</span></label>
+                    <input type="number" step="0.1" id="weight" name="weight" class="form-control" value="{{ profile.weight_kg or 68 }}" placeholder="Optional">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="activity_level" class="form-label">Daily Non-Exercise Activity Level</label>
+                <select id="activity_level" name="activity_level" class="form-select">
+                    <option value="sedentary" {% if profile.activity_level == 'sedentary' %}selected{% endif %}>Sedentary (Desk job / Studying most of the day)</option>
+                    <option value="lightly_active" {% if profile.activity_level == 'lightly_active' %}selected{% endif %}>Lightly Active (Walking campus, 5,000 - 7,500 daily steps)</option>
+                    <option value="moderately_active" {% if profile.activity_level == 'moderately_active' or not profile.activity_level %}selected{% endif %}>Moderately Active (8,000 - 10,000 daily steps)</option>
+                    <option value="very_active" {% if profile.activity_level == 'very_active' %}selected{% endif %}>Very Active (Heavy manual labor / walking > 12,000 steps)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- STEP 2: EXPERIENCE -->
+        <div class="card wizard-step-panel" data-step="2" style="display: none;">
+            <h2 class="card-title" style="margin-bottom: 1rem;">Step 2: Training Experience & Confidence</h2>
+            
+            <div class="form-group">
+                <label for="experience_level" class="form-label">Current Experience Level *</label>
+                <select id="experience_level" name="experience_level" class="form-select">
+                    <option value="beginner" {% if profile.experience_level == 'beginner' %}selected{% endif %}>Beginner (Less than 6 months of structured lifting)</option>
+                    <option value="occasional" {% if profile.experience_level == 'occasional' %}selected{% endif %}>Occasional (Gym on and off, familiar with basic lifts)</option>
+                    <option value="consistent" {% if profile.experience_level == 'consistent' %}selected{% endif %}>Consistent (1-2 years of regular structured training)</option>
+                    <option value="experienced" {% if profile.experience_level == 'experienced' %}selected{% endif %}>Experienced (2+ years of progressive overload training)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="training_history" class="form-label">Past Training History</label>
+                <textarea id="training_history" name="training_history" rows="2" class="form-control" placeholder="Briefly describe sports, martial arts, or past gym routines">{{ profile.training_history or '' }}</textarea>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="form-group">
+                    <label class="form-label">Have you followed a structured program before?</label>
+                    <div style="display: flex; gap: 1.5rem; margin-top: 0.4rem;">
+                        <label class="radio-label">
+                            <input type="radio" name="previous_structured_training" value="yes" {% if profile.previous_structured_training %}checked{% endif %}> Yes
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="previous_structured_training" value="no" {% if not profile.previous_structured_training %}checked{% endif %}> No
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="exercise_confidence" class="form-label">Exercise Form Confidence (1-5)</label>
+                    <select id="exercise_confidence" name="exercise_confidence" class="form-select">
+                        <option value="1">1 - Brand New / Unsure of technique</option>
+                        <option value="2">2 - Somewhat confident with guidance</option>
+                        <option value="3" selected>3 - Moderate confidence on primary lifts</option>
+                        <option value="4">4 - High confidence in compound technique</option>
+                        <option value="5">5 - Advanced / Lifelong technician</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="form-group">
+                    <label for="current_training_frequency" class="form-label">How many days are you currently working out?</label>
+                    <input type="number" id="current_training_frequency" name="current_training_frequency" min="0" max="7" class="form-control" value="{{ profile.current_training_frequency or 0 }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="preferred_session_length" class="form-label">Preferred Session Length (Minutes)</label>
+                    <select id="preferred_session_length" name="preferred_session_length" class="form-select">
+                        <option value="30">30 minutes (Express / High efficiency)</option>
+                        <option value="45" selected>45 minutes (Balanced & optimal)</option>
+                        <option value="60">60 minutes (Comprehensive volume)</option>
+                        <option value="75">75 minutes</option>
+                        <option value="90">90 minutes</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 3: GOALS -->
+        <div class="card wizard-step-panel" data-step="3" style="display: none;">
+            <h2 class="card-title" style="margin-bottom: 1rem;">Step 3: Goals & Focus Areas</h2>
+
+            <div class="form-group">
+                <label for="primary_goal" class="form-label">Primary Fitness Goal *</label>
+                <select id="primary_goal" name="primary_goal" class="form-select">
+                    <option value="fat_loss" {% if profile.primary_goal == 'fat_loss' %}selected{% endif %}>Fat Loss (Sustainable caloric deficit & muscle preservation)</option>
+                    <option value="muscle_gain" {% if profile.primary_goal == 'muscle_gain' %}selected{% endif %}>Muscle Gain / Hypertrophy (Lean surplus & volume accumulation)</option>
+                    <option value="body_recomp" {% if profile.primary_goal == 'body_recomp' %}selected{% endif %}>Body Recomposition (Simultaneous fat loss & muscle building)</option>
+                    <option value="strength" {% if profile.primary_goal == 'strength' %}selected{% endif %}>Pure Strength (Neuromuscular compound power & 1RM growth)</option>
+                    <option value="endurance" {% if profile.primary_goal == 'endurance' %}selected{% endif %}>Endurance & Stamina (Cardiorespiratory capacity)</option>
+                    <option value="general_fitness" {% if profile.primary_goal == 'general_fitness' or not profile.primary_goal %}selected{% endif %}>General Health & Functional Fitness</option>
+                    <option value="mobility" {% if profile.primary_goal == 'mobility' %}selected{% endif %}>Mobility & Postural Restoration</option>
+                    <option value="athletic_performance" {% if profile.primary_goal == 'athletic_performance' %}selected{% endif %}>Athletic Power & Agility</option>
+                    <option value="maintenance" {% if profile.primary_goal == 'maintenance' %}selected{% endif %}>Physical Maintenance</option>
+                    <option value="return_to_training" {% if profile.primary_goal == 'return_to_training' %}selected{% endif %}>Conservative Return to Training (Post-injury / layoff)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Secondary Goals (Select all that apply)</label>
+                <div class="grid grid-2" style="gap: 0.5rem; margin-top: 0.3rem;">
+                    <label class="checkbox-label"><input type="checkbox" name="secondary_goals" value="mobility"> Improved Joint Mobility</label>
+                    <label class="checkbox-label"><input type="checkbox" name="secondary_goals" value="cardio_health"> Cardiovascular Endurance</label>
+                    <label class="checkbox-label"><input type="checkbox" name="secondary_goals" value="posture"> Postural Correction (Desk work)</label>
+                    <label class="checkbox-label"><input type="checkbox" name="secondary_goals" value="stress_relief"> Mental Stress Relief</label>
+                    <label class="checkbox-label"><input type="checkbox" name="secondary_goals" value="core_stability"> Core & Lower Back Strength</label>
+                    <label class="checkbox-label"><input type="checkbox" name="secondary_goals" value="energy_levels"> Daily Energy & Focus</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 4: EQUIPMENT -->
+        <div class="card wizard-step-panel" data-step="4" style="display: none;">
+            <h2 class="card-title" style="margin-bottom: 1rem;">Step 4: Training Environment & Available Gear</h2>
+
+            <div class="form-group">
+                <label for="equipment_setting" class="form-label">Primary Training Setting *</label>
+                <select id="equipment_setting" name="equipment_setting" class="form-select">
+                    <option value="commercial_gym">Commercial Gym (Full barbells, dumbbells, cables & machines)</option>
+                    <option value="hostel_gym">Hostel Gym / College Gym (Basic dumbbells, pull-up bar, bench)</option>
+                    <option value="home_gym">Home Gym (Dumbbells or resistance bands)</option>
+                    <option value="bodyweight_only">Bodyweight / Calisthenics Only (No external weights)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Specific Equipment You Have Access To:</label>
+                <div class="grid grid-2" style="gap: 0.5rem; margin-top: 0.3rem;">
+                    <label class="checkbox-label"><input type="checkbox" name="available_equipment" value="dumbbells" checked> Dumbbells (Fixed or adjustable)</label>
+                    <label class="checkbox-label"><input type="checkbox" name="available_equipment" value="barbells" checked> Barbells & Plates</label>
+                    <label class="checkbox-label"><input type="checkbox" name="available_equipment" value="squat_rack" checked> Squat Rack / Power Cage</label>
+                    <label class="checkbox-label"><input type="checkbox" name="available_equipment" value="cables" checked> Cable Machines & Pulleys</label>
+                    <label class="checkbox-label"><input type="checkbox" name="available_equipment" value="bands"> Resistance Bands</label>
+                    <label class="checkbox-label"><input type="checkbox" name="available_equipment" value="bench" checked> Adjustable Weight Bench</label>
+                    <label class="checkbox-label"><input type="checkbox" name="available_equipment" value="pullup_bar" checked> Pull-Up Bar</label>
+                    <label class="checkbox-label"><input type="checkbox" name="available_equipment" value="cardio_machines"> Cardio Machines (Treadmill, Cycle)</label>
+                    <label class="checkbox-label"><input type="checkbox" name="available_equipment" value="bodyweight" checked> Bodyweight & Floor Space</label>
+                </div>
+                <span class="form-help">FitStart automatically eliminates exercises requiring gear not selected here.</span>
+            </div>
+        </div>
+
+        <!-- STEP 5: SCHEDULE -->
+        <div class="card wizard-step-panel" data-step="5" style="display: none;">
+            <h2 class="card-title" style="margin-bottom: 1rem;">Step 5: Schedule & Availability</h2>
+
+            <div class="grid grid-2">
+                <div class="form-group">
+                    <label for="training_days_count" class="form-label">Available Training Days Per Week *</label>
+                    <select id="training_days_count" name="training_days_count" class="form-select">
+                        <option value="2">2 Days / Week (Foundational Full-Body Split)</option>
+                        <option value="3" selected>3 Days / Week (Classic Full-Body Split)</option>
+                        <option value="4">4 Days / Week (Upper / Lower Split)</option>
+                        <option value="5">5 Days / Week (Upper/Lower/PPL Hybrid)</option>
+                        <option value="6">6 Days / Week (Push/Pull/Legs Split)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="preferred_time" class="form-label">Preferred Training Time</label>
+                    <select id="preferred_time" name="preferred_time" class="form-select">
+                        <option value="morning">Morning (Before work/classes)</option>
+                        <option value="afternoon">Afternoon</option>
+                        <option value="evening" selected>Evening (After classes/work)</option>
+                        <option value="night">Late Night</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Preferred Workout Days:</label>
+                <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.3rem;">
+                    <label class="checkbox-label"><input type="checkbox" name="preferred_days" value="Monday" checked> Mon</label>
+                    <label class="checkbox-label"><input type="checkbox" name="preferred_days" value="Tuesday"> Tue</label>
+                    <label class="checkbox-label"><input type="checkbox" name="preferred_days" value="Wednesday" checked> Wed</label>
+                    <label class="checkbox-label"><input type="checkbox" name="preferred_days" value="Thursday"> Thu</label>
+                    <label class="checkbox-label"><input type="checkbox" name="preferred_days" value="Friday" checked> Fri</label>
+                    <label class="checkbox-label"><input type="checkbox" name="preferred_days" value="Saturday"> Sat</label>
+                    <label class="checkbox-label"><input type="checkbox" name="preferred_days" value="Sunday"> Sun</label>
+                </div>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="form-group">
+                    <label for="cardio_preference" class="form-label">Cardiovascular Preference</label>
+                    <select id="cardio_preference" name="cardio_preference" class="form-select">
+                        <option value="walking" selected>Brisk Outdoor Walking (Low impact)</option>
+                        <option value="running">Running / Jogging</option>
+                        <option value="cycling">Stationary Cycling</option>
+                        <option value="hiit">HIIT / Circuit intervals</option>
+                        <option value="none">Minimal cardio focus</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="schedule_constraints" class="form-label">Schedule Constraints</label>
+                    <input type="text" id="schedule_constraints" name="schedule_constraints" class="form-control" placeholder="e.g. College labs until 5 PM, exams next month">
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 6: DIET & NUTRITION -->
+        <div class="card wizard-step-panel" data-step="6" style="display: none;">
+            <h2 class="card-title" style="margin-bottom: 1rem;">Step 6: Diet, Allergies & Meal Logistics</h2>
+
+            <div class="grid grid-2">
+                <div class="form-group">
+                    <label for="diet_type" class="form-label">Dietary Pattern *</label>
+                    <select id="diet_type" name="diet_type" class="form-select">
+                        <option value="vegetarian" selected>Vegetarian (Dairy-inclusive / Lacto-veg)</option>
+                        <option value="eggetarian">Eggetarian (Vegetarian + Eggs)</option>
+                        <option value="vegan">Vegan (100% Plant-based, no dairy/eggs)</option>
+                        <option value="non_vegetarian">Non-Vegetarian (Chicken, Fish, Eggs, Meat)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="cooking_facility" class="form-label">Cooking & Meal Access *</label>
+                    <select id="cooking_facility" name="cooking_facility" class="form-select">
+                        <option value="hostel_mess" selected>Hostel Mess / College Canteen (Limited control)</option>
+                        <option value="hostel_room_induction">Hostel Room with Induction / Kettle</option>
+                        <option value="full_kitchen">Full Home Kitchen (Full cooking access)</option>
+                        <option value="tiffin_service">Tiffin / Dabba Delivery Service</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Food Allergies & Intolerances (Never recommended in your plan):</label>
+                <div class="grid grid-3" style="gap: 0.5rem; margin-top: 0.3rem;">
+                    <label class="checkbox-label"><input type="checkbox" name="allergies" value="peanuts"> Peanuts</label>
+                    <label class="checkbox-label"><input type="checkbox" name="allergies" value="tree_nuts"> Tree Nuts (Almonds/Walnuts)</label>
+                    <label class="checkbox-label"><input type="checkbox" name="allergies" value="dairy"> Lactose / Dairy</label>
+                    <label class="checkbox-label"><input type="checkbox" name="allergies" value="gluten"> Gluten / Celiac</label>
+                    <label class="checkbox-label"><input type="checkbox" name="allergies" value="soy"> Soy / Soya Chunks</label>
+                    <label class="checkbox-label"><input type="checkbox" name="allergies" value="eggs"> Eggs</label>
+                    <label class="checkbox-label"><input type="checkbox" name="allergies" value="shellfish"> Shellfish</label>
+                </div>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="form-group">
+                    <label for="budget_level" class="form-label">Monthly Food Budget</label>
+                    <select id="budget_level" name="budget_level" class="form-select">
+                        <option value="budget_friendly" selected>Budget-Friendly (Affordable staples: Sattu, Chana, Eggs, Dals)</option>
+                        <option value="moderate">Moderate (Standard student grocery budget)</option>
+                        <option value="flexible">Flexible (Includes whey protein isolate, nuts, berries)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="meal_frequency" class="form-label">Preferred Meals Per Day</label>
+                    <select id="meal_frequency" name="meal_frequency" class="form-select">
+                        <option value="2">2 Meals (Intermittent Fasting style)</option>
+                        <option value="3">3 Meals (Breakfast, Lunch, Dinner)</option>
+                        <option value="4" selected>4 Meals (Breakfast, Lunch, Evening Snack, Dinner)</option>
+                        <option value="5">5 Meals (Frequent small meals)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="food_dislikes" class="form-label">Foods You Dislike (Comma-separated)</label>
+                <input type="text" id="food_dislikes" name="food_dislikes" class="form-control" placeholder="e.g. Karela, Mushroom, Tofu">
+            </div>
+        </div>
+
+        <!-- STEP 7: RECOVERY & SAFETY -->
+        <div class="card wizard-step-panel" data-step="7" style="display: none;">
+            <h2 class="card-title" style="margin-bottom: 1rem;">Step 7: Recovery, Joint Safety & Restrictions</h2>
+
+            <div class="grid grid-2">
+                <div class="form-group">
+                    <label for="sleep_hours" class="form-label">Typical Nightly Sleep (Hours) *</label>
+                    <input type="number" step="0.5" id="sleep_hours" name="sleep_hours" min="3" max="14" class="form-control" value="{{ profile.sleep_hours or 7.0 }}" required>
+                    <span class="form-help">NSCA & ACSM emphasize that muscular recovery happens during sleep.</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="daily_step_target" class="form-label">Daily Step Target</label>
+                    <input type="number" id="daily_step_target" name="daily_step_target" class="form-control" value="{{ profile.daily_step_target or 8000 }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Movements That Cause Joint Pain or Discomfort (FitStart automatically substitutes safe alternatives):</label>
+                <div class="grid grid-2" style="gap: 0.5rem; margin-top: 0.3rem;">
+                    <label class="checkbox-label"><input type="checkbox" name="pain_movements" value="knee_squats"> Deep Knee Squats (Knee pain)</label>
+                    <label class="checkbox-label"><input type="checkbox" name="pain_movements" value="lower_back_deadlifts"> Heavy Deadlifts (Lower back sensitivity)</label>
+                    <label class="checkbox-label"><input type="checkbox" name="pain_movements" value="shoulder_overhead_press"> Overhead Barbell Press (Shoulder impingement)</label>
+                    <label class="checkbox-label"><input type="checkbox" name="pain_movements" value="wrist_heavy_press"> Heavy Straight Barbell Curls/Press (Wrist pain)</label>
+                </div>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="form-group">
+                    <label for="physical_restrictions" class="form-label">Past Injuries / Physical Restrictions</label>
+                    <textarea id="physical_restrictions" name="physical_restrictions" rows="2" class="form-control" placeholder="e.g. Ankle sprain 3 months ago, mild scoliosis">{{ profile.physical_restrictions or '' }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="medical_conditions" class="form-label">Relevant Medical Limitations (Optional / Sensitive)</label>
+                    <textarea id="medical_conditions" name="medical_conditions" rows="2" class="form-control" placeholder="e.g. Asthma, hypertension (Used only for training volume safeguards)">{{ profile.medical_conditions or '' }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 8: ADDITIONAL PREFERENCES -->
+        <div class="card wizard-step-panel" data-step="8" style="display: none;">
+            <h2 class="card-title" style="margin-bottom: 1rem;">Step 8: Coaching Style & Final Preferences</h2>
+
+            <div class="form-group">
+                <label class="form-label">Priority Muscle Groups (FitStart will allocate focused accessory volume):</label>
+                <div class="grid grid-3" style="gap: 0.5rem; margin-top: 0.3rem;">
+                    <label class="checkbox-label"><input type="checkbox" name="priority_muscle_groups" value="chest"> Chest / Pecs</label>
+                    <label class="checkbox-label"><input type="checkbox" name="priority_muscle_groups" value="back"> Back / Lats & Upper Back</label>
+                    <label class="checkbox-label"><input type="checkbox" name="priority_muscle_groups" value="arms"> Arms (Biceps & Triceps)</label>
+                    <label class="checkbox-label"><input type="checkbox" name="priority_muscle_groups" value="shoulders"> Shoulders / Delts</label>
+                    <label class="checkbox-label"><input type="checkbox" name="priority_muscle_groups" value="legs"> Legs / Quads & Hamstrings</label>
+                    <label class="checkbox-label"><input type="checkbox" name="priority_muscle_groups" value="glutes"> Glutes</label>
+                    <label class="checkbox-label"><input type="checkbox" name="priority_muscle_groups" value="core"> Core & Abs</label>
+                </div>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="form-group">
+                    <label for="coaching_style" class="form-label">Preferred Coaching Feedback Style</label>
+                    <select id="coaching_style" name="coaching_style" class="form-select">
+                        <option value="encouraging" selected>Encouraging & Motivating</option>
+                        <option value="analytical">Analytical & Metric-Driven (Exact math & percentages)</option>
+                        <option value="direct">Direct & No-Nonsense</option>
+                        <option value="gentle">Gentle & Highly Conservative</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="desired_difficulty" class="form-label">Desired Training Difficulty</label>
+                    <select id="desired_difficulty" name="desired_difficulty" class="form-select">
+                        <option value="introductory">Introductory (RPE 6 - focus entirely on movement cues)</option>
+                        <option value="moderate" selected>Moderate (RPE 7-8 - optimal progressive sweet spot)</option>
+                        <option value="challenging">Challenging (RPE 8-9 - high neuromuscular intensity)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="background-color: var(--bg-secondary); padding: 1rem; border-radius: var(--radius-sm); margin-top: 1rem;">
+                <p style="font-size: 0.88rem; color: var(--charcoal-muted); line-height: 1.5;">
+                    🔒 <strong>Privacy Assurance:</strong> Your answers are encrypted and strictly bound to your user ID. FitStart will immediately synthesize your deterministic workout and nutrition routines upon submission.
+                </p>
+            </div>
+        </div>
+
+        <!-- Wizard Navigation Footer -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem;">
+            <button type="button" id="wizard-prev-btn" class="btn btn-secondary" style="display: none;">← Previous Step</button>
+            <div style="margin-left: auto; display: flex; gap: 0.75rem;">
+                <button type="button" id="wizard-next-btn" class="btn btn-primary">Next Step →</button>
+                <button type="submit" id="wizard-submit-btn" class="btn btn-primary" style="display: none;">Generate My Personalized Plans ✨</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/onboarding.js') }}"></script>
+{% endblock %}

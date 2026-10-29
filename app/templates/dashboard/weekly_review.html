@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Objective Weekly Review | FitStart{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 0 auto;">
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <span class="badge badge-sage">Weekly Report Period: {{ start_date }} – {{ end_date }}</span>
+            <h1 class="page-title">Objective Weekly Review</h1>
+            <p class="page-subtitle">Honest, data-backed synthesis of your recorded training, nutrition, and recovery trends</p>
+        </div>
+        <div>
+            <a href="{{ url_for('dashboard.index') }}" class="btn btn-secondary">← Back to Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Review Metric Cards -->
+    <div class="grid grid-4" style="margin-bottom: 1.5rem;">
+        <div class="stat-card" style="border-top: 3px solid var(--forest-green);">
+            <span class="stat-label">Workout Frequency</span>
+            <span class="stat-value">{{ total_workouts }} <span style="font-size: 1rem; font-weight: 500;">/ {{ target_workouts }}</span></span>
+            <span class="stat-detail">Total Volume: <strong>{{ total_volume_kg }} kg</strong></span>
+        </div>
+
+        <div class="stat-card" style="border-top: 3px solid #2E6F40;">
+            <span class="stat-label">Food Tracking</span>
+            <span class="stat-value">{{ days_food_logged }} <span style="font-size: 1rem; font-weight: 500;">/ 7 days</span></span>
+            <span class="stat-detail">Avg: <strong>{{ avg_calories }} kcal</strong> (Target: {{ target_cals }})</span>
+        </div>
+
+        <div class="stat-card" style="border-top: 3px solid #356D8A;">
+            <span class="stat-label">Sleep Average</span>
+            <span class="stat-value">{{ avg_sleep }} <span style="font-size: 1rem; font-weight: 500;">hrs</span></span>
+            <span class="stat-detail">Optimal Window: <strong>7.0 – 9.0 hrs</strong></span>
+        </div>
+
+        <div class="stat-card" style="border-top: 3px solid #C78229;">
+            <span class="stat-label">Habits Consistency</span>
+            <span class="stat-value">{{ days_habits_logged }} <span style="font-size: 1rem; font-weight: 500;">/ 7 days</span></span>
+            <span class="stat-detail">Avg Protein: <strong>{{ avg_protein }} g</strong></span>
+        </div>
+    </div>
+
+    <!-- Honest Accomplishments & Observations -->
+    <div class="card" style="border-left: 4px solid var(--color-success); margin-bottom: 1.5rem;">
+        <h2 class="card-title" style="color: var(--color-success); margin-bottom: 0.75rem;">
+            ✓ Recorded Accomplishments & Strengths
+        </h2>
+        {% if insights %}
+        <ul style="padding-left: 1.25rem; font-size: 0.95rem; color: var(--charcoal-text); display: flex; flex-direction: column; gap: 0.5rem; line-height: 1.6;">
+            {% for insight in insights %}
+                <li>{{ insight }}</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p style="color: var(--charcoal-muted); font-size: 0.95rem;">
+            No consistent logs recorded during this 7-day period to compute positive trends.
+        </p>
+        {% endif %}
+    </div>
+
+    <!-- Incomplete Information & Known Tracking Gaps -->
+    <div class="card" style="border-left: 4px solid var(--color-warning); margin-bottom: 1.5rem;">
+        <h2 class="card-title" style="color: var(--color-warning); margin-bottom: 0.75rem;">
+            ⚠️ Identified Tracking Gaps & Limitations
+        </h2>
+        {% if gaps %}
+        <ul style="padding-left: 1.25rem; font-size: 0.95rem; color: var(--charcoal-text); display: flex; flex-direction: column; gap: 0.5rem; line-height: 1.6;">
+            {% for gap in gaps %}
+                <li>{{ gap }}</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p style="color: var(--charcoal-muted); font-size: 0.95rem;">
+            Complete data recorded across training, nutrition, and recovery. No significant informational gaps detected.
+        </p>
+        {% endif %}
+        <div style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--charcoal-muted); font-style: italic;">
+            FitStart never assumes that an unlogged meal equals zero calorie intake, nor do we fabricate dummy progress statistics.
+        </div>
+    </div>
+
+    <!-- Suggested Weekly Adjustments -->
+    <div class="card" style="border-left: 4px solid var(--forest-green); margin-bottom: 1.5rem;">
+        <h2 class="card-title" style="color: var(--forest-green); margin-bottom: 0.75rem;">
+            🎯 Recommended Strategy for the Upcoming Week
+        </h2>
+        {% if adjustments %}
+        <ul style="padding-left: 1.25rem; font-size: 0.95rem; color: var(--charcoal-text); display: flex; flex-direction: column; gap: 0.5rem; line-height: 1.6;">
+            {% for adj in adjustments %}
+                <li>{{ adj }}</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p style="font-size: 0.95rem; color: var(--charcoal-text); line-height: 1.6;">
+            Your training frequency, nutritional caloric window, and sleep metrics align with your target protocol. Maintain current weekly workload and adhere to the linear progression cues on your active workout exercises.
+        </p>
+        {% endif %}
+    </div>
+
+    <!-- Personal Records Reference -->
+    {% if prs %}
+    <div class="card">
+        <h2 class="card-title" style="margin-bottom: 1rem;">Active Personal Records & Estimated 1RMs</h2>
+        <div class="grid grid-3">
+            {% for ex, pr in prs.items() %}
+            <div style="background-color: var(--bg-secondary); padding: 0.75rem 1rem; border-radius: var(--radius-sm);">
+                <strong style="color: var(--forest-green);">{{ ex }}</strong>
+                <div style="font-size: 1.1rem; font-weight: 700; margin-top: 0.2rem;">
+                    {{ pr.weight_kg }} kg &times; {{ pr.reps }} reps
+                </div>
+                <div style="font-size: 0.8rem; color: var(--charcoal-muted);">Est 1RM: {{ pr.est_1rm }} kg</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

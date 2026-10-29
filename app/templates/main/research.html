@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Structured Research Library | FitStart{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 class="page-title">Trusted Research & Scientific Evidence Library</h1>
+            <p class="page-subtitle">Academic consensus statements, exercise physiology guidelines, and public health sources powering FitStart</p>
+        </div>
+        <div>
+            <span class="badge badge-forest" style="font-size: 0.9rem; padding: 0.4rem 0.8rem;">ACSM • NSCA • ICMR • WHO • PubMed</span>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="background-color: var(--bg-secondary); border-left: 4px solid var(--forest-green); margin-bottom: 2rem;">
+    <h3 style="font-size: 1.05rem; color: var(--forest-green); margin-bottom: 0.4rem;">Methodological Disclaimer & Licensing Principles</h3>
+    <p style="font-size: 0.9rem; color: var(--charcoal-muted); line-height: 1.6;">
+        FitStart utilizes public health recommendations and exercise physiology consensus guidelines for educational programming and estimation. We do not redistribute copyrighted training manuals or proprietary food databases without authorization. External API disruptions never prevent local system operations. All energy and macro figures represent evidence-based estimates rather than individualized clinical prescriptions.
+    </p>
+</div>
+
+<div class="grid grid-2">
+    {% for source in sources %}
+    <div class="card" id="{{ source.id }}">
+        <div class="card-header" style="align-items: flex-start;">
+            <div>
+                <span class="badge badge-sage" style="margin-bottom: 0.35rem;">Published: {{ source.publication_year }}</span>
+                <h2 style="font-size: 1.25rem; color: var(--forest-green); margin-top: 0.2rem;">{{ source.name }}</h2>
+                <div style="font-size: 0.85rem; color: var(--charcoal-muted); font-weight: 500;">{{ source.organization }}</div>
+            </div>
+            <a href="{{ source.url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" style="white-space: nowrap;">Visit Source ↗</a>
+        </div>
+
+        <div style="margin-bottom: 1.25rem;">
+            <h4 style="font-size: 0.9rem; color: var(--charcoal-text); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.35rem;">Summary</h4>
+            <p style="font-size: 0.92rem; color: var(--charcoal-muted); line-height: 1.6;">
+                {{ source.summary }}
+            </p>
+        </div>
+
+        <div style="margin-bottom: 1.25rem;">
+            <h4 style="font-size: 0.9rem; color: var(--charcoal-text); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;">Relevant Recommendations Implemented in FitStart</h4>
+            <ul style="padding-left: 1.25rem; font-size: 0.9rem; color: var(--charcoal-text); display: flex; flex-direction: column; gap: 0.4rem;">
+                {% for rec in source.relevant_recommendations %}
+                    <li>{{ rec }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div style="background-color: var(--bg-secondary); padding: 0.85rem; border-radius: var(--radius-sm); margin-bottom: 1rem;">
+            <h5 style="font-size: 0.82rem; font-weight: 700; color: var(--charcoal-text); text-transform: uppercase; margin-bottom: 0.25rem;">Known Scope & Limitations</h5>
+            <p style="font-size: 0.85rem; color: var(--charcoal-muted); line-height: 1.5;">
+                {{ source.limitations }}
+            </p>
+        </div>
+
+        <div style="font-size: 0.8rem; color: var(--charcoal-light); border-top: 1px solid var(--border-color); padding-top: 0.75rem;">
+            <strong>Licensing & Attribution:</strong> {{ source.licensing_and_attribution }}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

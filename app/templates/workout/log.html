@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Log Workout Session | FitStart{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 0 auto;">
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 class="page-title">Log Workout Session</h1>
+            <p class="page-subtitle">Record sets, weights, and perceived exertion for adaptive progression tracking</p>
+        </div>
+        <div>
+            <a href="{{ url_for('workout.workout_history') }}" class="btn btn-secondary">View Past Sessions</a>
+        </div>
+    </div>
+
+    <!-- Quick Add Shortcuts from Active Plan -->
+    {% if plan %}
+    <div class="card" style="background-color: var(--bg-secondary);">
+        <h3 style="font-size: 0.95rem; color: var(--forest-green); margin-bottom: 0.5rem;">Quick-Add Exercises from Active Plan:</h3>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            {% for day in plan.days %}
+                {% for ex in day.exercises %}
+                    <button type="button" class="btn btn-sm btn-outline btn-add-set" data-exercise="{{ ex.exercise_name }}">
+                        + {{ ex.exercise_name }}
+                    </button>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('workout.log_workout') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="card">
+            <h2 class="card-title">Session Overview</h2>
+            <div class="grid grid-3">
+                <div class="form-group">
+                    <label for="date" class="form-label">Date *</label>
+                    <input type="date" id="date" name="date" class="form-control" value="{{ today }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="session_name" class="form-label">Session Name</label>
+                    <input type="text" id="session_name" name="session_name" class="form-control" value="Full Body Progression" required>
+                </div>
+                <div class="form-group">
+                    <label for="duration_minutes" class="form-label">Duration (Minutes)</label>
+                    <input type="number" id="duration_minutes" name="duration_minutes" class="form-control" value="45" min="5" max="240">
+                </div>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="form-group">
+                    <label for="perceived_exertion" class="form-label">Session Perceived Exertion (RPE 1-10)</label>
+                    <select id="perceived_exertion" name="perceived_exertion" class="form-select">
+                        <option value="5">5 - Very Light / Warmup pace</option>
+                        <option value="6">6 - Light effort (4+ reps in reserve)</option>
+                        <option value="7" selected>7 - Moderate effort (3 reps in reserve)</option>
+                        <option value="8">8 - Challenging effort (2 reps in reserve)</option>
+                        <option value="9">9 - Very heavy / hard (1 rep in reserve)</option>
+                        <option value="10">10 - Maximal limit effort (0 reps in reserve)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="notes" class="form-label">General Session Notes</label>
+                    <input type="text" id="notes" name="notes" class="form-control" placeholder="e.g. Felt well rested, great hamstring contraction">
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Recorded Exercises & Working Sets</h2>
+                <span class="badge badge-sage">Click quick-add above or add custom below</span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Exercise</th>
+                            <th>Set #</th>
+                            <th>Weight (kg)</th>
+                            <th>Reps</th>
+                            <th>RPE</th>
+                            <th>Notes</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="workout-sets-tbody">
+                        <tr>
+                            <td>
+                                <strong>Barbell Back Squat</strong>
+                                <input type="hidden" name="exercise_name[]" value="Barbell Back Squat">
+                            </td>
+                            <td style="width: 80px;">
+                                <input type="number" name="set_number[]" value="1" class="form-control" style="padding: 0.35rem;" required>
+                            </td>
+                            <td style="width: 110px;">
+                                <input type="number" step="0.5" name="weight_kg[]" value="60" class="form-control" style="padding: 0.35rem;" required>
+                            </td>
+                            <td style="width: 90px;">
+                                <input type="number" name="reps_completed[]" value="10" class="form-control" style="padding: 0.35rem;" required>
+                            </td>
+                            <td style="width: 90px;">
+                                <input type="number" step="0.5" min="1" max="10" name="rpe[]" value="7.5" class="form-control" style="padding: 0.35rem;">
+                            </td>
+                            <td>
+                                <input type="text" name="item_notes[]" placeholder="Clean depth" class="form-control" style="padding: 0.35rem;">
+                            </td>
+                            <td style="width: 50px; text-align: center;">
+                                <button type="button" class="btn btn-sm btn-danger remove-set-btn" style="padding: 0.2rem 0.5rem;">✕</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>Barbell Back Squat</strong>
+                                <input type="hidden" name="exercise_name[]" value="Barbell Back Squat">
+                            </td>
+                            <td style="width: 80px;">
+                                <input type="number" name="set_number[]" value="2" class="form-control" style="padding: 0.35rem;" required>
+                            </td>
+                            <td style="width: 110px;">
+                                <input type="number" step="0.5" name="weight_kg[]" value="60" class="form-control" style="padding: 0.35rem;" required>
+                            </td>
+                            <td style="width: 90px;">
+                                <input type="number" name="reps_completed[]" value="10" class="form-control" style="padding: 0.35rem;" required>
+                            </td>
+                            <td style="width: 90px;">
+                                <input type="number" step="0.5" min="1" max="10" name="rpe[]" value="8" class="form-control" style="padding: 0.35rem;">
+                            </td>
+                            <td>
+                                <input type="text" name="item_notes[]" placeholder="Solid bracing" class="form-control" style="padding: 0.35rem;">
+                            </td>
+                            <td style="width: 50px; text-align: center;">
+                                <button type="button" class="btn btn-sm btn-danger remove-set-btn" style="padding: 0.2rem 0.5rem;">✕</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>Barbell Flat Bench Press</strong>
+                                <input type="hidden" name="exercise_name[]" value="Barbell Flat Bench Press">
+                            </td>
+                            <td style="width: 80px;">
+                                <input type="number" name="set_number[]" value="1" class="form-control" style="padding: 0.35rem;" required>
+                            </td>
+                            <td style="width: 110px;">
+                                <input type="number" step="0.5" name="weight_kg[]" value="50" class="form-control" style="padding: 0.35rem;" required>
+                            </td>
+                            <td style="width: 90px;">
+                                <input type="number" name="reps_completed[]" value="10" class="form-control" style="padding: 0.35rem;" required>
+                            </td>
+                            <td style="width: 90px;">
+                                <input type="number" step="0.5" min="1" max="10" name="rpe[]" value="7.5" class="form-control" style="padding: 0.35rem;">
+                            </td>
+                            <td>
+                                <input type="text" name="item_notes[]" placeholder="Controlled pause" class="form-control" style="padding: 0.35rem;">
+                            </td>
+                            <td style="width: 50px; text-align: center;">
+                                <button type="button" class="btn btn-sm btn-danger remove-set-btn" style="padding: 0.2rem 0.5rem;">✕</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Custom Exercise Row Adder -->
+            <div style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <input type="text" id="custom-ex-input" placeholder="Or type a custom exercise name..." class="form-control" style="max-width: 320px;">
+                <button type="button" id="btn-add-custom-set" class="btn btn-secondary btn-sm">+ Add Custom Exercise Set</button>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem;">
+            <a href="{{ url_for('workout.plan') }}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary" style="padding: 0.75rem 2rem;">Save Workout Session</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/workout.js') }}"></script>
+<script>
+document.getElementById('btn-add-custom-set').addEventListener('click', function () {
+    const input = document.getElementById('custom-ex-input');
+    const name = input.value.trim();
+    if (!name) {
+        alert('Please enter an exercise name.');
+        return;
+    }
+    const fakeBtn = document.createElement('button');
+    fakeBtn.className = 'btn-add-set';
+    fakeBtn.setAttribute('data-exercise', name);
+    document.body.appendChild(fakeBtn);
+    fakeBtn.click();
+    fakeBtn.remove();
+    input.value = '';
+});
+</script>
+{% endblock %}

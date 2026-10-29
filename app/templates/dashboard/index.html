@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | FitStart{% endblock %}
+
+{% block content %}
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <span class="badge badge-sage" style="margin-bottom: 0.35rem;">{{ today }}</span>
+        <h1 class="page-title">Welcome Back, {{ current_user.username }}</h1>
+        <p class="page-subtitle">Your evidence-based training, nutrition, and recovery control center</p>
+    </div>
+    <div style="display: flex; gap: 0.75rem;">
+        <a href="{{ url_for('dashboard.weekly_review') }}" class="btn btn-primary">📊 View Weekly Review</a>
+        <a href="{{ url_for('workout.log_workout') }}" class="btn btn-secondary">+ Log Workout</a>
+    </div>
+</div>
+
+<!-- Overview Metric Cards -->
+<div class="grid grid-4" style="margin-bottom: 1.5rem;">
+    <div class="stat-card" style="border-top: 3px solid var(--forest-green);">
+        <span class="stat-label">Workouts This Week</span>
+        <span class="stat-value">{{ weekly_workout_count }} <span style="font-size: 1rem; font-weight: 500;">/ {{ current_user.profile.training_days_count if current_user.profile else 3 }}</span></span>
+        <span class="stat-detail">Active: <strong>{{ active_workout.split_type.replace('_', ' ').title() if active_workout else 'None' }}</strong></span>
+    </div>
+
+    <div class="stat-card" style="border-top: 3px solid #2E6F40;">
+        <span class="stat-label">Today's Intake</span>
+        <span class="stat-value">{{ today_cals }} <span style="font-size: 1rem; font-weight: 500;">kcal</span></span>
+        <span class="stat-detail">Target: <strong>{{ active_nutrition.target_calories|round if active_nutrition else 2000 }} kcal</strong></span>
+    </div>
+
+    <div class="stat-card" style="border-top: 3px solid #356D8A;">
+        <span class="stat-label">Hydration Today</span>
+        <span class="stat-value">{{ today_habits.water_ml if today_habits else 0 }} <span style="font-size: 1rem; font-weight: 500;">ml</span></span>
+        <span class="stat-detail">Target: <strong>2,500 - 3,500 ml</strong></span>
+    </div>
+
+    <div class="stat-card" style="border-top: 3px solid #C78229;">
+        <span class="stat-label">Sleep Recorded</span>
+        <span class="stat-value">{{ today_habits.sleep_hours if today_habits else 0.0 }} <span style="font-size: 1rem; font-weight: 500;">hrs</span></span>
+        <span class="stat-detail">Personal Records: <strong>{{ prs_count }} lifts</strong></span>
+    </div>
+</div>
+
+<!-- Adaptive Coaching Recommendations Section -->
+{% if pending_recs %}
+<div class="card" style="background-color: #FAFCFA; border-left: 4px solid var(--forest-green);">
+    <div class="card-header">
+        <div>
+            <h2 class="card-title" style="display: flex; align-items: center; gap: 0.5rem;">
+                <span>🧠 Adaptive Coaching Recommendations</span>
+            </h2>
+            <div style="font-size: 0.85rem; color: var(--charcoal-muted);">
+                Derived from your logged performance, fatigue, and recovery metrics
+            </div>
+        </div>
+        <span class="badge badge-forest">{{ pending_recs|length }} Pending</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 1rem;">
+        {% for rec in pending_recs %}
+        <div style="background-color: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0.5rem;">
+                <div>
+                    <span class="badge badge-sage" style="font-size: 0.75rem;">{{ rec.category.upper() }}</span>
+                    <h3 style="font-size: 1.1rem; color: var(--forest-green); margin-top: 0.2rem;">{{ rec.title }}</h3>
+                </div>
+                <div style="display: flex; gap: 0.4rem;">
+                    <form method="POST" action="{{ url_for('dashboard.update_recommendation_status', rec_id=rec.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="status" value="accepted">
+                        <button type="submit" class="btn btn-sm btn-primary">Accept</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('dashboard.update_recommendation_status', rec_id=rec.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="status" value="rejected">
+                        <button type="submit" class="btn btn-sm btn-outline">Reject</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('dashboard.update_recommendation_status', rec_id=rec.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="status" value="ignored">
+                        <button type="submit" class="btn btn-sm btn-secondary">Dismiss</button>
+                    </form>
+                </div>
+            </div>
+
+            <p style="font-size: 0.95rem; color: var(--charcoal-text); margin-bottom: 0.5rem; line-height: 1.5;">
+                {{ rec.recommendation_text }}
+            </p>
+
+            <div style="background-color: var(--bg-secondary); padding: 0.6rem 0.85rem; border-radius: var(--radius-sm); font-size: 0.85rem; color: var(--charcoal-muted);">
+                <strong>Scientific Rationale:</strong> {{ rec.rationale }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Charts Section -->
+<div class="grid grid-2" style="margin-bottom: 1.5rem;">
+    <!-- Workout Volume Chart -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Training Volume Trend</h2>
+            <span class="badge badge-sage">Last 10 Days</span>
+        </div>
+        <div style="height: 260px; position: relative;">
+            <canvas id="volumeChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Nutrition Chart -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Daily Calorie Intake vs Goal</h2>
+            <span class="badge badge-sage">Dotted Line = Target</span>
+        </div>
+        <div style="height: 260px; position: relative;">
+            <canvas id="nutritionChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Habits Chart -->
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Sleep Duration & Hydration Trends</h2>
+        <span class="badge badge-sage">Recovery Tracking</span>
+    </div>
+    <div style="height: 260px; position: relative;">
+        <canvas id="habitsChart"></canvas>
+    </div>
+</div>
+
+<!-- Action Hub Grid -->
+<div class="grid grid-3">
+    <div class="card" style="text-align: center;">
+        <h3 style="font-size: 1.1rem; color: var(--forest-green); margin-bottom: 0.5rem;">Current Workout Program</h3>
+        <p style="font-size: 0.9rem; color: var(--charcoal-muted); margin-bottom: 1rem;">
+            {{ active_workout.title if active_workout else 'No program generated' }}
+        </p>
+        <a href="{{ url_for('workout.plan') }}" class="btn btn-outline btn-sm">Open Workout Plan</a>
+    </div>
+
+    <div class="card" style="text-align: center;">
+        <h3 style="font-size: 1.1rem; color: var(--forest-green); margin-bottom: 0.5rem;">Daily Meal Plan</h3>
+        <p style="font-size: 0.9rem; color: var(--charcoal-muted); margin-bottom: 1rem;">
+            {{ active_nutrition.title if active_nutrition else 'No meal plan generated' }}
+        </p>
+        <a href="{{ url_for('nutrition.plan') }}" class="btn btn-outline btn-sm">Open Meal Plan</a>
+    </div>
+
+    <div class="card" style="text-align: center;">
+        <h3 style="font-size: 1.1rem; color: var(--forest-green); margin-bottom: 0.5rem;">Habits & Hydration</h3>
+        <p style="font-size: 0.9rem; color: var(--charcoal-muted); margin-bottom: 1rem;">
+            Log your daily water, sleep, and recovery soreness.
+        </p>
+        <a href="{{ url_for('habits.tracker') }}" class="btn btn-outline btn-sm">Open Habit Tracker</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}

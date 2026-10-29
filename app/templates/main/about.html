@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}About FitStart | B.Tech CSE AI/ML Engineering Project{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <div class="page-header">
+        <h1 class="page-title">About FitStart</h1>
+        <p class="page-subtitle">Personalized fitness & nutrition engineering platform designed for real-world constraints</p>
+    </div>
+
+    <div class="card">
+        <h2 style="font-size: 1.3rem; color: var(--forest-green); margin-bottom: 0.75rem;">Project Background & Vision</h2>
+        <p style="color: var(--charcoal-muted); margin-bottom: 1rem; line-height: 1.7;">
+            FitStart was designed and engineered by a B.Tech Computer Science & Engineering (AI/ML) student to bridge the gap between academic exercise physiology and accessible software. Most commercial fitness applications provide either generic static workouts or hallucinatory AI routines that fail to account for collegiate budget limits, hostel mess constraints, and safety guidelines.
+        </p>
+        <p style="color: var(--charcoal-muted); margin-bottom: 1.5rem; line-height: 1.7;">
+            FitStart uses a deterministic, transparent rules-based recommendation engine paired with verified physiological formulas (Mifflin-St Jeor, Epley 1RM, ACSM FITT principles, and ICMR-NIN nutritional standards).
+        </p>
+
+        <h3 style="font-size: 1.15rem; color: var(--forest-green); margin-bottom: 0.75rem;">Core Engineering Principles</h3>
+        <div class="grid grid-2" style="margin-bottom: 1.5rem;">
+            <div style="background-color: var(--bg-secondary); padding: 1rem; border-radius: var(--radius-sm);">
+                <strong style="color: var(--forest-green);">1. Evidence Over Hype</strong>
+                <p style="font-size: 0.88rem; color: var(--charcoal-muted); margin-top: 0.3rem;">
+                    Every rep range, set volume, and macro ratio links to peer-reviewed literature rather than social media influencers.
+                </p>
+            </div>
+            <div style="background-color: var(--bg-secondary); padding: 1rem; border-radius: var(--radius-sm);">
+                <strong style="color: var(--forest-green);">2. Hostel & Student Friendly</strong>
+                <p style="font-size: 0.88rem; color: var(--charcoal-muted); margin-top: 0.3rem;">
+                    Realistic options for students living in hostels with mess meals, limited cooking facilities, and vegetarian/eggetarian diets.
+                </p>
+            </div>
+            <div style="background-color: var(--bg-secondary); padding: 1rem; border-radius: var(--radius-sm);">
+                <strong style="color: var(--forest-green);">3. Safety & Joint Preservation</strong>
+                <p style="font-size: 0.88rem; color: var(--charcoal-muted); margin-top: 0.3rem;">
+                    Pain-movement rules automatically substitute compromising exercises (e.g. knee or lower back discomfort) with biomechanically safer alternatives.
+                </p>
+            </div>
+            <div style="background-color: var(--bg-secondary); padding: 1rem; border-radius: var(--radius-sm);">
+                <strong style="color: var(--forest-green);">4. Data Isolation & Security</strong>
+                <p style="font-size: 0.88rem; color: var(--charcoal-muted); margin-top: 0.3rem;">
+                    Strict user session verification, CSRF defense, and database relationship isolation prevent cross-tenant data access.
+                </p>
+            </div>
+        </div>
+
+        <div style="border-top: 1px solid var(--border-color); padding-top: 1rem; font-size: 0.9rem; color: var(--charcoal-muted);">
+            <p><strong>Stack:</strong> Python 3.14 • Flask 3 • SQLAlchemy ORM • MySQL / SQLite • Chart.js • HTML5 / CSS3</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Workout History & Personal Records | FitStart{% endblock %}
+
+{% block content %}
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <h1 class="page-title">Workout History & Personal Records</h1>
+        <p class="page-subtitle">Track your long-term consistency, volume accumulation, and personal records</p>
+    </div>
+    <div>
+        <a href="{{ url_for('workout.log_workout') }}" class="btn btn-primary">+ Log New Session</a>
+    </div>
+</div>
+
+<!-- Personal Records Table -->
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">🏆 All-Time Personal Records (PRs)</h2>
+        <span class="badge badge-sage">Calculated via validated Epley formula</span>
+    </div>
+
+    {% if prs %}
+    <div class="grid grid-3">
+        {% for ex_name, pr in prs.items() %}
+        <div style="background-color: var(--bg-secondary); padding: 1rem; border-radius: var(--radius-sm); border-left: 3px solid var(--forest-green);">
+            <strong style="color: var(--forest-green); font-size: 1rem;">{{ ex_name }}</strong>
+            <div style="font-size: 1.4rem; font-weight: 700; color: var(--charcoal-text); margin: 0.3rem 0;">
+                {{ pr.weight_kg }} kg &times; {{ pr.reps }} reps
+            </div>
+            <div style="font-size: 0.85rem; color: var(--charcoal-muted);">
+                Est. 1RM: <strong>{{ pr.est_1rm }} kg</strong> • {{ pr.date }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p style="color: var(--charcoal-muted); font-size: 0.95rem;">
+        No workout data logged yet. Once you complete your first session, your personal records and estimated 1RMs will appear here.
+    </p>
+    {% endif %}
+</div>
+
+<!-- Logged Sessions -->
+<div class="card">
+    <h2 class="card-title" style="margin-bottom: 1.25rem;">Logged Workout Sessions</h2>
+
+    {% if logs %}
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        {% for log in logs %}
+        <div style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1.25rem; background-color: #FFFFFF;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
+                <div>
+                    <span class="badge badge-forest">{{ log.date.strftime('%A, %b %d, %Y') }}</span>
+                    <h3 style="font-size: 1.15rem; color: var(--forest-green); margin-top: 0.25rem;">{{ log.session_name }}</h3>
+                    <div style="font-size: 0.85rem; color: var(--charcoal-muted);">
+                        Duration: {{ log.duration_minutes }} mins • Perceived Exertion: RPE {{ log.perceived_exertion }}/10
+                    </div>
+                </div>
+                <div>
+                    <form method="POST" action="{{ url_for('workout.delete_log', log_id=log.id) }}" onsubmit="return confirm('Delete this workout record?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-danger">Delete Log</button>
+                    </form>
+                </div>
+            </div>
+
+            {% if log.notes %}
+            <p style="font-size: 0.9rem; color: var(--charcoal-muted); margin-bottom: 0.75rem; font-style: italic;">
+                "{{ log.notes }}"
+            </p>
+            {% endif %}
+
+            <div class="table-responsive">
+                <table class="table" style="font-size: 0.88rem;">
+                    <thead>
+                        <tr style="background-color: var(--bg-primary);">
+                            <th>Exercise</th>
+                            <th>Set</th>
+                            <th>Weight</th>
+                            <th>Reps</th>
+                            <th>RPE</th>
+                            <th>Volume</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in log.items %}
+                        <tr>
+                            <td><strong>{{ item.exercise_name }}</strong></td>
+                            <td>Set {{ item.set_number }}</td>
+                            <td>{{ item.weight_kg }} kg</td>
+                            <td>{{ item.reps_completed }}</td>
+                            <td>{{ item.rpe or '-' }}</td>
+                            <td>{{ (item.weight_kg * item.reps_completed)|round(1) }} kg</td>
+                            <td>{{ item.notes or '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 2rem;">
+        <p style="color: var(--charcoal-muted);">No recorded sessions. Log your workout to start building your progressive training history.</p>
+        <a href="{{ url_for('workout.log_workout') }}" class="btn btn-primary" style="margin-top: 1rem;">Log First Workout</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

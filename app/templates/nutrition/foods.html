@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Verified Food & Nutrition Database | FitStart{% endblock %}
+
+{% block content %}
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <h1 class="page-title">Verified Food & Nutrition Database</h1>
+        <p class="page-subtitle">Real nutritional data for Indian staples, hostel mess essentials, and whole foods</p>
+    </div>
+    <div>
+        <span class="badge badge-forest" style="font-size: 0.85rem; padding: 0.35rem 0.75rem;">Verified Nutrient Data</span>
+    </div>
+</div>
+
+<!-- Search & Filter Bar -->
+<div class="card" style="margin-bottom: 1.5rem;">
+    <form method="GET" action="{{ url_for('nutrition.foods') }}">
+        <div class="grid grid-3">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="q" class="form-label">Search Food</label>
+                <input type="text" id="q" name="q" class="form-control" value="{{ search_q or '' }}" placeholder="e.g. Sattu, Paneer, Dal...">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="category" class="form-label">Category</label>
+                <select id="category" name="category" class="form-select">
+                    <option value="">All Categories</option>
+                    {% for c in categories %}
+                        <option value="{{ c }}" {% if current_cat == c %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="diet" class="form-label">Diet Pattern</label>
+                <select id="diet" name="diet" class="form-select">
+                    <option value="">All Diet Types</option>
+                    <option value="Vegetarian" {% if current_diet == 'Vegetarian' %}selected{% endif %}>Vegetarian</option>
+                    <option value="Vegan" {% if current_diet == 'Vegan' %}selected{% endif %}>Vegan</option>
+                    <option value="Eggetarian" {% if current_diet == 'Eggetarian' %}selected{% endif %}>Eggetarian</option>
+                    <option value="Non-Vegetarian" {% if current_diet == 'Non-Vegetarian' %}selected{% endif %}>Non-Vegetarian</option>
+                </select>
+            </div>
+        </div>
+        <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+            <button type="submit" class="btn btn-primary btn-sm">Filter Database</button>
+            <a href="{{ url_for('nutrition.foods') }}" class="btn btn-secondary btn-sm">Reset Filters</a>
+        </div>
+    </form>
+</div>
+
+<!-- Food Cards Grid -->
+<div class="grid grid-3">
+    {% for item in items %}
+    <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <span class="badge badge-sage">{{ item.category }}</span>
+                <span class="badge badge-forest">{{ item.diet_type }}</span>
+            </div>
+            <h3 style="font-size: 1.1rem; color: var(--forest-green); margin-bottom: 0.35rem;">{{ item.name }}</h3>
+            <div style="font-size: 0.8rem; color: var(--charcoal-muted); margin-bottom: 0.75rem;">
+                Standard Serving: <strong>{{ item.serving_size_unit }}</strong>
+            </div>
+
+            <!-- Per 100g Macro Grid -->
+            <div style="background-color: var(--bg-secondary); padding: 0.6rem 0.8rem; border-radius: var(--radius-sm); margin-bottom: 0.75rem; font-size: 0.85rem;">
+                <div style="font-weight: 700; color: var(--forest-green); margin-bottom: 0.3rem;">Per 100 grams:</div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Calories: <strong>{{ item.calories_per_100g|round }} kcal</strong></span>
+                    <span>Protein: <strong>{{ item.protein_per_100g|round(1) }} g</strong></span>
+                </div>
+                <div style="display: flex; justify-content: space-between; color: var(--charcoal-muted); font-size: 0.8rem; margin-top: 0.2rem;">
+                    <span>Carbs: {{ item.carbs_per_100g|round(1) }}g</span>
+                    <span>Fat: {{ item.fat_per_100g|round(1) }}g</span>
+                    <span>Fiber: {{ item.fiber_per_100g|round(1) }}g</span>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <!-- Tags & Allergens -->
+            <div style="display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
+                {% if item.is_hostel_friendly %}
+                    <span class="badge badge-info" style="font-size: 0.72rem;">Hostel Friendly</span>
+                {% endif %}
+                {% if item.is_budget_friendly %}
+                    <span class="badge badge-success" style="font-size: 0.72rem;">Budget Staple</span>
+                {% endif %}
+                {% if item.contains_peanuts %}
+                    <span class="badge badge-warning" style="font-size: 0.72rem;">Peanuts</span>
+                {% endif %}
+                {% if item.contains_dairy %}
+                    <span class="badge badge-warning" style="font-size: 0.72rem;">Dairy</span>
+                {% endif %}
+                {% if item.contains_gluten %}
+                    <span class="badge badge-warning" style="font-size: 0.72rem;">Gluten</span>
+                {% endif %}
+            </div>
+
+            <a href="{{ url_for('nutrition.log_food') }}" class="btn btn-outline btn-sm" style="width: 100%;">+ Log this Food</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

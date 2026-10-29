@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Create Account | FitStart{% endblock %}
+
+{% block content %}
+<div style="max-width: 480px; margin: 2rem auto;">
+    <div class="card">
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+            <h1 class="page-title" style="font-size: 1.6rem;">Start Your Fitness Journey</h1>
+            <p class="page-subtitle">Evidence-based training and nutrition tailored to your life</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.register') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="form-group">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" id="username" name="username" class="form-control" value="{{ username or '' }}" placeholder="Choose a unique username" required autofocus>
+            </div>
+
+            <div class="form-group">
+                <label for="email" class="form-label">Email Address</label>
+                <input type="email" id="email" name="email" class="form-control" value="{{ email or '' }}" placeholder="name@college.edu or personal email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="Minimum 6 characters" required>
+                <span class="form-help">Must be at least 6 characters. Hashed using scrypt / PBKDF2.</span>
+            </div>
+
+            <div class="form-group">
+                <label for="confirm_password" class="form-label">Confirm Password</label>
+                <input type="password" id="confirm_password" name="confirm_password" class="form-control" placeholder="Re-enter password" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">Create Account & Begin Onboarding</button>
+        </form>
+
+        <div style="text-align: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-color); font-size: 0.9rem;">
+            <p>Already have an account? <a href="{{ url_for('auth.login') }}" style="font-weight: 600;">Log in here</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

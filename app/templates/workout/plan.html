@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Active Workout Program | FitStart{% endblock %}
+
+{% block content %}
+{% if plan %}
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem;">
+            <span class="badge badge-forest">Active Program</span>
+            <span class="badge badge-sage">Version {{ plan.version }}</span>
+            <span class="badge badge-info">{{ plan.goal.replace('_', ' ').title() }}</span>
+        </div>
+        <h1 class="page-title">{{ plan.title }}</h1>
+        <p class="page-subtitle">{{ plan.description }}</p>
+    </div>
+    <div style="display: flex; gap: 0.75rem;">
+        <a href="{{ url_for('workout.log_workout') }}" class="btn btn-primary">Log This Workout</a>
+        <form method="POST" action="{{ url_for('workout.regenerate_plan') }}" onsubmit="return confirm('Generate a fresh routine based on your latest profile? Previous version will be saved in history.');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-secondary">Regenerate Plan</button>
+        </form>
+        <a href="{{ url_for('workout.plan_history') }}" class="btn btn-outline">Plan History</a>
+    </div>
+</div>
+
+<div class="grid grid-2" style="margin-bottom: 1.5rem;">
+    <div class="card" style="margin-bottom: 0;">
+        <h3 style="font-size: 1rem; color: var(--forest-green); margin-bottom: 0.35rem;">⚡ Progression Protocol</h3>
+        <p style="font-size: 0.92rem; color: var(--charcoal-muted); line-height: 1.5;">
+            {{ plan.progression_model }}
+        </p>
+    </div>
+    <div class="card" style="margin-bottom: 0;">
+        <h3 style="font-size: 1rem; color: var(--forest-green); margin-bottom: 0.35rem;">🌿 Recovery & Deload Guidance</h3>
+        <p style="font-size: 0.92rem; color: var(--charcoal-muted); line-height: 1.5;">
+            {{ plan.recovery_guidelines }}
+        </p>
+    </div>
+</div>
+
+<!-- Days & Exercises -->
+<div style="display: flex; flex-direction: column; gap: 1.5rem;">
+    {% for day in plan.days %}
+    <div class="card" style="border-top: 4px solid var(--forest-green);">
+        <div class="card-header" style="flex-wrap: wrap; gap: 0.5rem;">
+            <div>
+                <h2 style="font-size: 1.25rem; color: var(--forest-green);">{{ day.day_name }}</h2>
+                <div style="font-size: 0.9rem; color: var(--charcoal-muted); font-weight: 500;">
+                    Focus: <strong>{{ day.focus }}</strong> • ~{{ day.estimated_duration_min }} mins
+                </div>
+            </div>
+            <div>
+                <a href="{{ url_for('workout.log_workout') }}" class="btn btn-sm btn-outline">Log Session</a>
+            </div>
+        </div>
+
+        {% if day.warm_up %}
+        <div style="background-color: var(--bg-secondary); padding: 0.75rem 1rem; border-radius: var(--radius-sm); margin-bottom: 1rem; font-size: 0.88rem;">
+            <strong style="color: var(--forest-green);">Dynamic Warm-up:</strong> {{ day.warm_up }}
+        </div>
+        {% endif %}
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Exercise</th>
+                        <th>Target Muscle</th>
+                        <th>Equipment</th>
+                        <th>Sets x Reps</th>
+                        <th>RPE / Effort</th>
+                        <th>Rest</th>
+                        <th>Substitutions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ex in day.exercises %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>
+                            <strong>{{ ex.exercise_name }}</strong>
+                            {% if ex.technique_cue %}
+                            <div style="font-size: 0.8rem; color: var(--charcoal-muted); margin-top: 0.2rem;">
+                                💡 <em>{{ ex.technique_cue }}</em>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge badge-sage">{{ ex.target_muscle }}</span></td>
+                        <td>{{ ex.equipment }}</td>
+                        <td><strong>{{ ex.sets }} sets</strong> &times; {{ ex.reps }}</td>
+                        <td>{{ ex.rpe_target }}</td>
+                        <td>{{ ex.rest_seconds }}s</td>
+                        <td>
+                            {% if ex.substitutions %}
+                                <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
+                                    {% for sub in ex.substitutions %}
+                                        <span class="badge badge-forest" style="font-size: 0.72rem;">{{ sub }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <span style="color: var(--charcoal-light); font-size: 0.8rem;">Standard</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if day.cool_down %}
+        <div style="margin-top: 1rem; font-size: 0.85rem; color: var(--charcoal-muted);">
+            <strong>Cool-down:</strong> {{ day.cool_down }}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<div class="card" style="text-align: center; padding: 3rem 2rem;">
+    <h2 class="page-title">No Active Workout Plan Found</h2>
+    <p style="color: var(--charcoal-muted); margin-bottom: 1.5rem;">
+        Complete your onboarding questionnaire so FitStart can synthesize your personalized program.
+    </p>
+    <a href="{{ url_for('onboarding.questionnaire') }}" class="btn btn-primary">Start Onboarding</a>
+</div>
+{% endif %}
+{% endblock %}

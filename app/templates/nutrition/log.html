@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Daily Food & Nutrition Log | FitStart{% endblock %}
+
+{% block content %}
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <h1 class="page-title">Daily Food & Nutrition Log</h1>
+        <p class="page-subtitle">Track your actual daily intake against your calibrated targets</p>
+    </div>
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <label for="date-selector" style="font-size: 0.9rem; font-weight: 600; color: var(--charcoal-muted);">Date:</label>
+        <input type="date" id="date-selector" class="form-control" value="{{ selected_date }}" style="width: auto;" onchange="window.location.href='{{ url_for('nutrition.log_food') }}?date=' + this.value;">
+    </div>
+</div>
+
+<!-- Daily Intake vs Target Cards -->
+<div class="grid grid-4" style="margin-bottom: 1.5rem;">
+    <div class="stat-card" style="border-top: 3px solid var(--forest-green);">
+        <span class="stat-label">Calories Logged</span>
+        <span class="stat-value">{{ day_totals.calories|round }} <span style="font-size: 1rem; font-weight: 500;">kcal</span></span>
+        <span class="stat-detail">Target: <strong>{{ active_plan.target_calories|round if active_plan else 2000 }} kcal</strong></span>
+    </div>
+    <div class="stat-card" style="border-top: 3px solid #2E6F40;">
+        <span class="stat-label">Protein</span>
+        <span class="stat-value">{{ day_totals.protein|round(1) }} <span style="font-size: 1rem; font-weight: 500;">g</span></span>
+        <span class="stat-detail">Target: <strong>{{ active_plan.target_protein|round(1) if active_plan else 130 }} g</strong></span>
+    </div>
+    <div class="stat-card" style="border-top: 3px solid #C78229;">
+        <span class="stat-label">Carbohydrates</span>
+        <span class="stat-value">{{ day_totals.carbs|round(1) }} <span style="font-size: 1rem; font-weight: 500;">g</span></span>
+        <span class="stat-detail">Target: <strong>{{ active_plan.target_carbs|round(1) if active_plan else 240 }} g</strong></span>
+    </div>
+    <div class="stat-card" style="border-top: 3px solid #B43838;">
+        <span class="stat-label">Fats</span>
+        <span class="stat-value">{{ day_totals.fat|round(1) }} <span style="font-size: 1rem; font-weight: 500;">g</span></span>
+        <span class="stat-detail">Target: <strong>{{ active_plan.target_fat|round(1) if active_plan else 55 }} g</strong></span>
+    </div>
+</div>
+
+<!-- Log New Food Form -->
+<div class="card">
+    <h2 class="card-title" style="margin-bottom: 1rem;">Log Food to {{ selected_date }}</h2>
+
+    <form method="POST" action="{{ url_for('nutrition.log_food') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="date" value="{{ selected_date }}">
+
+        <div class="grid grid-3">
+            <div class="form-group">
+                <label for="meal_type" class="form-label">Meal Slot *</label>
+                <select id="meal_type" name="meal_type" class="form-select" required>
+                    <option value="Breakfast">Breakfast</option>
+                    <option value="Lunch" selected>Lunch</option>
+                    <option value="Evening Snack">Evening Snack</option>
+                    <option value="Dinner">Dinner</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="food_id" class="form-label">Select from Verified Food Database</label>
+                <select id="food_id" name="food_id" class="form-select">
+                    <option value="">-- Choose verified item --</option>
+                    {% for food in all_foods %}
+                    <option value="{{ food.id }}">
+                        {{ food.name }} ({{ food.calories_per_100g|round }} kcal / 100g)
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="portion_grams" class="form-label">Portion (in grams) *</label>
+                <input type="number" step="5" min="5" max="2000" id="portion_grams" name="portion_grams" class="form-control" value="100" required>
+            </div>
+        </div>
+
+        <!-- Custom Entry Toggle -->
+        <details style="margin-bottom: 1rem; font-size: 0.9rem;">
+            <summary style="cursor: pointer; color: var(--forest-green); font-weight: 600;">+ Or enter custom unlisted food manually</summary>
+            <div style="background-color: var(--bg-secondary); padding: 1rem; border-radius: var(--radius-sm); margin-top: 0.5rem;">
+                <div class="grid grid-3">
+                    <div class="form-group">
+                        <label for="custom_food_name" class="form-label">Custom Food Name</label>
+                        <input type="text" id="custom_food_name" name="custom_food_name" class="form-control" placeholder="e.g. Mess Special Dal Makhani">
+                    </div>
+                    <div class="form-group">
+                        <label for="custom_calories" class="form-label">Total Calories (kcal)</label>
+                        <input type="number" step="0.1" id="custom_calories" name="custom_calories" class="form-control" placeholder="150">
+                    </div>
+                    <div class="form-group">
+                        <label for="custom_protein" class="form-label">Protein (g)</label>
+                        <input type="number" step="0.1" id="custom_protein" name="custom_protein" class="form-control" placeholder="8">
+                    </div>
+                </div>
+                <div class="grid grid-3">
+                    <div class="form-group">
+                        <label for="custom_carbs" class="form-label">Carbohydrates (g)</label>
+                        <input type="number" step="0.1" id="custom_carbs" name="custom_carbs" class="form-control" placeholder="20">
+                    </div>
+                    <div class="form-group">
+                        <label for="custom_fat" class="form-label">Fat (g)</label>
+                        <input type="number" step="0.1" id="custom_fat" name="custom_fat" class="form-control" placeholder="5">
+                    </div>
+                    <div class="form-group">
+                        <label for="custom_fiber" class="form-label">Fiber (g)</label>
+                        <input type="number" step="0.1" id="custom_fiber" name="custom_fiber" class="form-control" placeholder="2">
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <button type="submit" class="btn btn-primary">Add Entry to Log</button>
+    </form>
+</div>
+
+<!-- Table of Logged Entries -->
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Logged Meals for {{ selected_date }}</h2>
+        <span class="badge badge-sage">{{ daily_logs|length }} Entries Recorded</span>
+    </div>
+
+    {% if daily_logs %}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Meal Slot</th>
+                    <th>Food Item</th>
+                    <th>Portion</th>
+                    <th>Calories</th>
+                    <th>Protein</th>
+                    <th>Carbs</th>
+                    <th>Fat</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in daily_logs %}
+                <tr>
+                    <td><span class="badge badge-forest">{{ entry.meal_type }}</span></td>
+                    <td><strong>{{ entry.food_name }}</strong></td>
+                    <td>{{ entry.portion_grams|round }} g</td>
+                    <td><strong>{{ entry.calories|round(1) }}</strong> kcal</td>
+                    <td>{{ entry.protein|round(1) }} g</td>
+                    <td>{{ entry.carbs|round(1) }} g</td>
+                    <td>{{ entry.fat|round(1) }} g</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('nutrition.delete_log', log_id=entry.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-danger" style="padding: 0.2rem 0.5rem;">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 2rem;">
+        <p style="color: var(--charcoal-muted); margin-bottom: 0.5rem;">No meals logged for this date yet.</p>
+        <span class="badge" style="background-color: var(--bg-secondary); color: var(--charcoal-muted); font-size: 0.82rem;">
+            Note: Unlogged days are kept distinct from zero-calorie intake in our weekly analytics.
+        </span>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}User Profile Settings | FitStart{% endblock %}
+
+{% block content %}
+<div style="max-width: 820px; margin: 0 auto;">
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 class="page-title">Profile & Personalization Settings</h1>
+            <p class="page-subtitle">Update your measurements, lifestyle constraints, or diet</p>
+        </div>
+        <div>
+            <a href="{{ url_for('onboarding.questionnaire') }}" class="btn btn-secondary btn-sm">Retake Full Questionnaire</a>
+        </div>
+    </div>
+
+    <form method="POST" action="{{ url_for('onboarding.profile') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="card">
+            <h2 class="card-title">Physical Metrics</h2>
+            <div class="grid grid-3">
+                <div class="form-group">
+                    <label for="age" class="form-label">Age</label>
+                    <input type="number" id="age" name="age" class="form-control" value="{{ profile.age or 22 }}">
+                </div>
+                <div class="form-group">
+                    <label for="height_cm" class="form-label">Height (cm)</label>
+                    <input type="number" step="0.1" id="height_cm" name="height_cm" class="form-control" value="{{ profile.height_cm or 172 }}">
+                </div>
+                <div class="form-group">
+                    <label for="weight_kg" class="form-label">Body Weight (kg)</label>
+                    <input type="number" step="0.1" id="weight_kg" name="weight_kg" class="form-control" value="{{ profile.weight_kg or 68 }}">
+                </div>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="form-group">
+                    <label for="activity_level" class="form-label">Daily Activity Level</label>
+                    <select id="activity_level" name="activity_level" class="form-select">
+                        <option value="sedentary" {% if profile.activity_level == 'sedentary' %}selected{% endif %}>Sedentary</option>
+                        <option value="lightly_active" {% if profile.activity_level == 'lightly_active' %}selected{% endif %}>Lightly Active</option>
+                        <option value="moderately_active" {% if profile.activity_level == 'moderately_active' %}selected{% endif %}>Moderately Active</option>
+                        <option value="very_active" {% if profile.activity_level == 'very_active' %}selected{% endif %}>Very Active</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="region" class="form-label">Cuisine / Region</label>
+                    <select id="region" name="region" class="form-select">
+                        <option value="North Indian" {% if profile.region == 'North Indian' %}selected{% endif %}>North Indian</option>
+                        <option value="South Indian" {% if profile.region == 'South Indian' %}selected{% endif %}>South Indian</option>
+                        <option value="East Indian" {% if profile.region == 'East Indian' %}selected{% endif %}>East Indian</option>
+                        <option value="West Indian" {% if profile.region == 'West Indian' %}selected{% endif %}>West Indian</option>
+                        <option value="Global" {% if profile.region == 'Global' %}selected{% endif %}>Global</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">Training & Diet Constraints</h2>
+            <div class="grid grid-3">
+                <div class="form-group">
+                    <label for="primary_goal" class="form-label">Primary Goal</label>
+                    <select id="primary_goal" name="primary_goal" class="form-select">
+                        <option value="fat_loss" {% if profile.primary_goal == 'fat_loss' %}selected{% endif %}>Fat Loss</option>
+                        <option value="muscle_gain" {% if profile.primary_goal == 'muscle_gain' %}selected{% endif %}>Muscle Gain</option>
+                        <option value="body_recomp" {% if profile.primary_goal == 'body_recomp' %}selected{% endif %}>Body Recomposition</option>
+                        <option value="strength" {% if profile.primary_goal == 'strength' %}selected{% endif %}>Strength</option>
+                        <option value="general_fitness" {% if profile.primary_goal == 'general_fitness' %}selected{% endif %}>General Fitness</option>
+                        <option value="return_to_training" {% if profile.primary_goal == 'return_to_training' %}selected{% endif %}>Return to Training</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="equipment_setting" class="form-label">Equipment Setting</label>
+                    <select id="equipment_setting" name="equipment_setting" class="form-select">
+                        <option value="commercial_gym" {% if profile.equipment_setting == 'commercial_gym' %}selected{% endif %}>Commercial Gym</option>
+                        <option value="hostel_gym" {% if profile.equipment_setting == 'hostel_gym' %}selected{% endif %}>Hostel Gym</option>
+                        <option value="home_gym" {% if profile.equipment_setting == 'home_gym' %}selected{% endif %}>Home Gym</option>
+                        <option value="bodyweight_only" {% if profile.equipment_setting == 'bodyweight_only' %}selected{% endif %}>Bodyweight Only</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="training_days_count" class="form-label">Training Days / Week</label>
+                    <select id="training_days_count" name="training_days_count" class="form-select">
+                        <option value="2" {% if profile.training_days_count == 2 %}selected{% endif %}>2 Days</option>
+                        <option value="3" {% if profile.training_days_count == 3 %}selected{% endif %}>3 Days</option>
+                        <option value="4" {% if profile.training_days_count == 4 %}selected{% endif %}>4 Days</option>
+                        <option value="5" {% if profile.training_days_count == 5 %}selected{% endif %}>5 Days</option>
+                        <option value="6" {% if profile.training_days_count == 6 %}selected{% endif %}>6 Days</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-3">
+                <div class="form-group">
+                    <label for="diet_type" class="form-label">Diet Pattern</label>
+                    <select id="diet_type" name="diet_type" class="form-select">
+                        <option value="vegetarian" {% if profile.diet_type == 'vegetarian' %}selected{% endif %}>Vegetarian</option>
+                        <option value="eggetarian" {% if profile.diet_type == 'eggetarian' %}selected{% endif %}>Eggetarian</option>
+                        <option value="vegan" {% if profile.diet_type == 'vegan' %}selected{% endif %}>Vegan</option>
+                        <option value="non_vegetarian" {% if profile.diet_type == 'non_vegetarian' %}selected{% endif %}>Non-Vegetarian</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="cooking_facility" class="form-label">Cooking Facility</label>
+                    <select id="cooking_facility" name="cooking_facility" class="form-select">
+                        <option value="hostel_mess" {% if profile.cooking_facility == 'hostel_mess' %}selected{% endif %}>Hostel Mess</option>
+                        <option value="hostel_room_induction" {% if profile.cooking_facility == 'hostel_room_induction' %}selected{% endif %}>Hostel Room (Induction)</option>
+                        <option value="full_kitchen" {% if profile.cooking_facility == 'full_kitchen' %}selected{% endif %}>Full Kitchen</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="budget_level" class="form-label">Budget Level</label>
+                    <select id="budget_level" name="budget_level" class="form-select">
+                        <option value="budget_friendly" {% if profile.budget_level == 'budget_friendly' %}selected{% endif %}>Budget-Friendly</option>
+                        <option value="moderate" {% if profile.budget_level == 'moderate' %}selected{% endif %}>Moderate</option>
+                        <option value="flexible" {% if profile.budget_level == 'flexible' %}selected{% endif %}>Flexible</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="form-group">
+                    <label for="sleep_hours" class="form-label">Sleep Target (Hours)</label>
+                    <input type="number" step="0.5" id="sleep_hours" name="sleep_hours" class="form-control" value="{{ profile.sleep_hours or 7.0 }}">
+                </div>
+                <div class="form-group">
+                    <label for="daily_step_target" class="form-label">Step Target</label>
+                    <input type="number" id="daily_step_target" name="daily_step_target" class="form-control" value="{{ profile.daily_step_target or 8000 }}">
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <label class="checkbox-label">
+                    <input type="checkbox" name="regenerate_plans" value="true" checked>
+                    <strong>Regenerate Workout & Meal Plans with these updated parameters</strong>
+                </label>
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary">Save Profile Changes</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

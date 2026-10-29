@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}FitStart | Evidence-Based Personal Fitness & Nutrition Engine{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem 0 3rem 0; text-align: center; max-width: 850px; margin: 0 auto;">
+    <div style="display: inline-block; background-color: var(--sage-light); color: var(--forest-green); padding: 0.35rem 1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; margin-bottom: 1.25rem;">
+        Scientific Integrity • Sound Engineering • Adaptive Coaching
+    </div>
+    <h1 style="font-size: 2.8rem; font-weight: 800; color: var(--forest-green); line-height: 1.2; letter-spacing: -1px; margin-bottom: 1.2rem;">
+        Personalized Fitness & Nutrition Built on Real Evidence
+    </h1>
+    <p style="font-size: 1.2rem; color: var(--charcoal-muted); line-height: 1.7; margin-bottom: 2rem;">
+        Say goodbye to generic AI routines and influencer fads. FitStart delivers transparent, rules-based workout programming and practical Indian nutrition tailored to your schedule, equipment, hostel mess, and recovery.
+    </p>
+    <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary" style="padding: 0.8rem 1.8rem; font-size: 1.05rem;">Go to Your Dashboard</a>
+            <a href="{{ url_for('workout.plan') }}" class="btn btn-secondary" style="padding: 0.8rem 1.8rem; font-size: 1.05rem;">View Active Plan</a>
+        {% else %}
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary" style="padding: 0.8rem 1.8rem; font-size: 1.05rem;">Start Your Free Onboarding</a>
+            <a href="{{ url_for('main.research') }}" class="btn btn-secondary" style="padding: 0.8rem 1.8rem; font-size: 1.05rem;">Explore Research Library</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="grid grid-3" style="margin-top: 2rem;">
+    <div class="card">
+        <div style="font-size: 2rem; margin-bottom: 0.75rem;">🏋️</div>
+        <h3 class="card-title">Rules-Based Training Engine</h3>
+        <p style="color: var(--charcoal-muted); font-size: 0.95rem; margin-top: 0.5rem; line-height: 1.6;">
+            Programs synthesized from your exact training frequency (2-6 days), equipment (commercial gym, hostel gym, dumbbells, bodyweight), and injury history with verified movement patterns and substitutions.
+        </p>
+    </div>
+
+    <div class="card">
+        <div style="font-size: 2rem; margin-bottom: 0.75rem;">🥗</div>
+        <h3 class="card-title">Realistic Indian Nutrition</h3>
+        <p style="color: var(--charcoal-muted); font-size: 0.95rem; margin-top: 0.5rem; line-height: 1.6;">
+            Energy estimates calculated via Mifflin-St Jeor and ICMR guidelines. Full support for vegetarian, vegan, and eggetarian diets with authentic hostel-friendly foods: sattu, oats, boiled eggs, dal, and paneer.
+        </p>
+    </div>
+
+    <div class="card">
+        <div style="font-size: 2rem; margin-bottom: 0.75rem;">📈</div>
+        <h3 class="card-title">Adaptive Progression</h3>
+        <p style="color: var(--charcoal-muted); font-size: 0.95rem; margin-top: 0.5rem; line-height: 1.6;">
+            Transparent double progression suggestions when you hit target reps with crisp form. Never blindly forces load increases if poor sleep, pain, or excessive soreness is logged.
+        </p>
+    </div>
+</div>
+
+<div class="card" style="margin-top: 2rem; background: linear-gradient(135deg, #FBF9F5 0%, #F5F2EB 100%);">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
+        <div style="max-width: 650px;">
+            <span class="badge badge-forest" style="margin-bottom: 0.5rem;">Public Health & Academic Rigor</span>
+            <h2 style="font-size: 1.5rem; color: var(--forest-green); margin-bottom: 0.5rem;">Structured Research & Open Science</h2>
+            <p style="color: var(--charcoal-muted); font-size: 0.95rem; line-height: 1.6;">
+                Every formula and progression cue links directly to validated consensus guidelines from the American College of Sports Medicine (ACSM), National Strength and Conditioning Association (NSCA), ICMR-NIN India, and World Health Organization (WHO).
+            </p>
+        </div>
+        <div>
+            <a href="{{ url_for('main.research') }}" class="btn btn-outline">Browse Research Sources</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Personalized Meal Plan | FitStart{% endblock %}
+
+{% block content %}
+{% if plan %}
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem;">
+            <span class="badge badge-forest">Active Nutrition Plan</span>
+            <span class="badge badge-sage">Version {{ plan.version }}</span>
+        </div>
+        <h1 class="page-title">{{ plan.title }}</h1>
+        <p class="page-subtitle">Calculated using Mifflin-St Jeor, ACSM macronutrient targets & ICMR-NIN dietary guidelines</p>
+    </div>
+    <div style="display: flex; gap: 0.75rem;">
+        <a href="{{ url_for('nutrition.log_food') }}" class="btn btn-primary">Log Daily Food</a>
+        <form method="POST" action="{{ url_for('nutrition.regenerate_plan') }}" onsubmit="return confirm('Regenerate your daily meal plan based on your current profile?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-secondary">Regenerate Meal Plan</button>
+        </form>
+    </div>
+</div>
+
+<!-- Macro Target Cards -->
+<div class="grid grid-4" style="margin-bottom: 1.5rem;">
+    <div class="stat-card" style="border-top: 3px solid var(--forest-green);">
+        <span class="stat-label">Daily Calories</span>
+        <span class="stat-value">{{ plan.target_calories|round }} <span style="font-size: 1rem; font-weight: 500;">kcal</span></span>
+        <span class="stat-detail">Plan Sum: <strong>{{ plan_totals.calories }} kcal</strong></span>
+    </div>
+    <div class="stat-card" style="border-top: 3px solid #2E6F40;">
+        <span class="stat-label">Protein Target</span>
+        <span class="stat-value">{{ plan.target_protein|round(1) }} <span style="font-size: 1rem; font-weight: 500;">g</span></span>
+        <span class="stat-detail">Plan Sum: <strong>{{ plan_totals.protein }} g</strong></span>
+    </div>
+    <div class="stat-card" style="border-top: 3px solid #C78229;">
+        <span class="stat-label">Carbohydrates</span>
+        <span class="stat-value">{{ plan.target_carbs|round(1) }} <span style="font-size: 1rem; font-weight: 500;">g</span></span>
+        <span class="stat-detail">Plan Sum: <strong>{{ plan_totals.carbs }} g</strong></span>
+    </div>
+    <div class="stat-card" style="border-top: 3px solid #B43838;">
+        <span class="stat-label">Dietary Fats</span>
+        <span class="stat-value">{{ plan.target_fat|round(1) }} <span style="font-size: 1rem; font-weight: 500;">g</span></span>
+        <span class="stat-detail">Plan Sum: <strong>{{ plan_totals.fat }} g</strong></span>
+    </div>
+</div>
+
+<!-- Calculation Notes & Safety -->
+<div class="card" style="background-color: var(--bg-secondary); border-left: 4px solid var(--forest-green); margin-bottom: 2rem;">
+    <h3 style="font-size: 0.95rem; color: var(--forest-green); margin-bottom: 0.35rem;">Scientific Energy & Macronutrient Calibration Notes</h3>
+    <pre style="white-space: pre-wrap; font-family: var(--font-sans); font-size: 0.88rem; color: var(--charcoal-muted); line-height: 1.6;">{{ plan.calculation_notes }}</pre>
+</div>
+
+<!-- Meals Breakdown -->
+<div style="display: flex; flex-direction: column; gap: 1.5rem;">
+    {% for meal_type, items in items_by_meal.items() %}
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <h2 style="font-size: 1.25rem; color: var(--forest-green);">{{ meal_type }}</h2>
+                <div style="font-size: 0.85rem; color: var(--charcoal-muted);">
+                    Subtotal: {{ items|sum(attribute='calories')|round(1) }} kcal • 
+                    P: {{ items|sum(attribute='protein')|round(1) }}g • 
+                    C: {{ items|sum(attribute='carbs')|round(1) }}g • 
+                    F: {{ items|sum(attribute='fat')|round(1) }}g
+                </div>
+            </div>
+            <span class="badge badge-sage">{{ items|length }} Items</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Food Item</th>
+                        <th>Portion Description</th>
+                        <th>Portion (grams)</th>
+                        <th>Calories</th>
+                        <th>Protein</th>
+                        <th>Carbs</th>
+                        <th>Fat</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td><strong>{{ item.food_name }}</strong></td>
+                        <td style="color: var(--charcoal-muted);">{{ item.portion_description or '-' }}</td>
+                        <td style="width: 140px;">
+                            <form method="POST" action="{{ url_for('nutrition.edit_plan_item', item_id=item.id) }}" style="display: flex; gap: 0.3rem; align-items: center;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="number" step="5" min="10" max="1000" name="portion_grams" value="{{ item.portion_grams|round }}" class="form-control" style="padding: 0.3rem 0.5rem; width: 75px;" required>
+                                <button type="submit" class="btn btn-sm btn-outline" style="padding: 0.25rem 0.5rem;" title="Recalculate nutrition">✓</button>
+                            </form>
+                        </td>
+                        <td><strong>{{ item.calories|round(1) }}</strong> kcal</td>
+                        <td>{{ item.protein|round(1) }} g</td>
+                        <td>{{ item.carbs|round(1) }} g</td>
+                        <td>{{ item.fat|round(1) }} g</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('nutrition.delete_plan_item', item_id=item.id) }}" onsubmit="return confirm('Remove {{ item.food_name }} from this meal?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-danger" style="padding: 0.2rem 0.5rem;">Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<div class="card" style="text-align: center; padding: 3rem 2rem;">
+    <h2 class="page-title">No Active Nutrition Plan Found</h2>
+    <p style="color: var(--charcoal-muted); margin-bottom: 1.5rem;">
+        Complete your onboarding questionnaire to generate your calibrated meal plan.
+    </p>
+    <a href="{{ url_for('onboarding.questionnaire') }}" class="btn btn-primary">Start Onboarding</a>
+</div>
+{% endif %}
+{% endblock %}

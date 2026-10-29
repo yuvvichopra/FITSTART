@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Workout Program Version History | FitStart{% endblock %}
+
+{% block content %}
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <h1 class="page-title">Workout Program Version History</h1>
+        <p class="page-subtitle">All generated routines are archived so you can compare progress or restore past splits</p>
+    </div>
+    <div>
+        <a href="{{ url_for('workout.plan') }}" class="btn btn-secondary">← Back to Active Plan</a>
+    </div>
+</div>
+
+{% if plans %}
+<div style="display: flex; flex-direction: column; gap: 1rem;">
+    {% for p in plans %}
+    <div class="card" style="{% if p.is_active %}border: 2px solid var(--forest-green); background-color: #FAFCFA;{% endif %}">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
+                    <span class="badge badge-sage">Version {{ p.version }}</span>
+                    {% if p.is_active %}
+                        <span class="badge badge-success">Currently Active</span>
+                    {% else %}
+                        <span class="badge" style="background-color: var(--bg-secondary); color: var(--charcoal-muted);">Archived</span>
+                    {% endif %}
+                    <span style="font-size: 0.82rem; color: var(--charcoal-light);">Created: {{ p.created_at.strftime('%b %d, %Y') if p.created_at else '' }}</span>
+                </div>
+                <h2 style="font-size: 1.2rem; color: var(--forest-green);">{{ p.title }}</h2>
+                <p style="font-size: 0.9rem; color: var(--charcoal-muted); margin-top: 0.2rem;">{{ p.description }}</p>
+                <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--charcoal-muted);">
+                    <strong>Structure:</strong> {{ p.days|length }} days/week • <strong>Goal:</strong> {{ p.goal.replace('_', ' ').title() }}
+                </div>
+            </div>
+
+            <div>
+                {% if p.is_active %}
+                    <span class="btn btn-outline btn-sm" style="cursor: default;">Active</span>
+                {% else %}
+                    <form method="POST" action="{{ url_for('workout.restore_plan', plan_id=p.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-primary btn-sm">Restore as Active</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: 2.5rem;">
+    <p style="color: var(--charcoal-muted);">No archived plans found.</p>
+</div>
+{% endif %}
+{% endblock %}
